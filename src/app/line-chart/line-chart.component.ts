@@ -11,6 +11,7 @@ import {
   ApexMarkers
 } from "ng-apexcharts";
 import { ChartService } from '../services/chart.service';
+import * as moment from 'moment';
 
 export interface  ChartOptions {
   series: ApexAxisChartSeries;
@@ -48,14 +49,40 @@ export class LineChartComponent implements OnInit {
     })
   }
 
-  drawChart(result: any) {
+  drawChart(result: any, timeFrameValue = 'custom') {
     const labels = result.map((res:any) => res.label)
     const revenue = result.map((res:any) => res.revenue)
+
+    const label: any = [];
+    const data: any = [];
+
+    let formatValue: string;
+
+    switch(timeFrameValue) {
+      case 'week':
+        formatValue = 'ddd'
+        break;
+      case 'year':
+        formatValue = 'MMM'
+        break;
+      case 'custom':
+        formatValue = 'DD MMM'
+        break;
+      default:
+        formatValue = 'MMM'
+    }
+  
+    for (let i = 0; i < labels.length; i++) {
+      let formattedLabelValue : any = timeFrameValue != 'month' ? moment(labels[i], 'DD-MM-YYYY').format(formatValue) : labels[i]
+      label.push(formattedLabelValue);
+      data.push(revenue[i]);
+    }
+    console.log(label, data)
     this.chartOptions = {
       series: [
         {
           name: "Desktops",
-          data: revenue
+          data: data
         }
       ],
       chart: {
@@ -106,7 +133,7 @@ export class LineChartComponent implements OnInit {
         strokeColors: "#6365EF"
       },
       xaxis: {
-        categories: labels
+        categories: label
       },
     };
   }
